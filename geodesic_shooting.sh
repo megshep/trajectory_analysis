@@ -17,6 +17,7 @@ export USER_SPM_DIR="/mnt/iusers01/nm01/j90161ms/scratch/spm25/spm"
 cd "$SLURM_SUBMIT_DIR"
 
 # Run MATLAB non-interactively, calling your shoot.m script
-matlab -nodisplay -nosplash -batch "try; addpath(getenv('USER_SPM_DIR')); run('/mnt/iusers01/nm01/j90161ms/trajectory/geodesic_shoot.m'); catch ME; disp(getReport(ME)); exit(1); end; exit(0);"
+matlab -nodisplay -nosplash -batch "try; addpath(getenv('USER_SPM_DIR')); run('/mnt/iusers01/nm01/j90161ms/trajectory/geodesic_shooting.m'); catch ME; disp(getReport(ME)); exit(1); end; exit(0);"
+
 
 
