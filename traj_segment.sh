@@ -19,7 +19,7 @@ cd "$SLURM_SUBMIT_DIR"
 SUB_ID=$SLURM_ARRAY_TASK_ID
 
 # Run the MATLAB script 
-matlab -nodisplay -nosplash -batch "try;addpath(getenv('USER_SPM_DIR'));run('/mnt/iusers01/nm01/j90161ms/trajectory/segment_traj.m');catch ME;fprintf(2,'Error: %s\n', ME.message);disp(getReport(ME, 'extended'));end;exit"
+matlab -nodisplay -nosplash -batch "try;addpath(getenv('USER_SPM_DIR'));run('/mnt/iusers01/nm01/j90161ms/trajectory/array_segment.m');catch ME;fprintf(2,'Error: %s\n', ME.message);disp(getReport(ME, 'extended'));end;exit"
 
 
 
