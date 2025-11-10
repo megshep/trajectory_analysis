@@ -8,8 +8,16 @@ SUB_ID = str2double(getenv('SLURM_ARRAY_TASK_ID'));
 
 % 3. Find all rc1 and rc2 images
 base_dir = '/scratch/j90161ms/';
-rc1_files = sort(fullfile({dir(fullfile(base_dir, 'rc1_*.nii')).folder}, {dir(fullfile(base_dir, 'rc1_*.nii')).name}));
-rc2_files = sort(fullfile({dir(fullfile(base_dir, 'rc2a_*.nii')).folder}, {dir(fullfile(base_dir, 'rc2_*.nii')).name}));
+
+% -- rc1 files (exclude rc1_avg*) --
+rc1_all = dir(fullfile(base_dir, 'rc1_*.nii'));
+rc1_all = rc1_all(~startsWith({rc1_all.name}, 'rc1_avg'));
+rc1_files = sort(fullfile({rc1_all.folder}, {rc1_all.name}));
+
+% -- rc2 files (exclude rc2_avg*) --
+rc2_all = dir(fullfile(base_dir, 'rc2_*.nii'));
+rc2_all = rc2_all(~startsWith({rc2_all.name}, 'rc2_avg'));
+rc2_files = sort(fullfile({rc2_all.folder}, {rc2_all.name}));
 
 % 4. Select images for this SLURM job
 this_rc1 = rc1_files{SUB_ID};
