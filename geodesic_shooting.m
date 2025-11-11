@@ -1,38 +1,31 @@
-% 1. Add SPM to the path
+% Add SPM to the path
 addpath('/mnt/iusers01/nm01/j90161ms/scratch/spm25/spm');
 spm('defaults','fmri');
 spm_jobman('initcfg');
 
-% 2. Get SLURM array index
+% Get SLURM array index - this is specific for the fact I'm running this in job arrays on the CSF
 SUB_ID = str2double(getenv('SLURM_ARRAY_TASK_ID'));
 
-% 3. Find all rc1 and rc2 images
+% define the directory
 base_dir = '/scratch/j90161ms/';
 
-% -- rc1 files (exclude rc1_avg*) --
-rc1_all = dir(fullfile(base_dir, 'rc1_*.nii'));
-rc1_all = rc1_all(~startsWith({rc1_all.name}, 'rc1_avg'));
-rc1_files = sort(fullfile({rc1_all.folder}, {rc1_all.name}));
+% Load list of valid subject IDs from the .txt file that I have already generated
+fid = fopen(fullfile(base_dir, 'valid_subject_IDs.txt'));
+valid_subjects = textscan(fid, '%s');
+fclose(fid);
+valid_subjects = valid_subjects{1};
 
-% -- rc2 files (exclude rc2_avg*) --
-rc2_all = dir(fullfile(base_dir, 'rc2_*.nii'));
-rc2_all = rc2_all(~startsWith({rc2_all.name}, 'rc2_avg'));
-rc2_files = sort(fullfile({rc2_all.folder}, {rc2_all.name}));
+% Pick the current subject ID
+this_id = valid_subjects{SUB_ID};
 
-% 4. Select images for this SLURM job
-this_rc1 = rc1_files{SUB_ID};
-this_rc2 = rc2_files{SUB_ID};
+% Define rc1 and rc2 file paths
+this_rc1 = fullfile(base_dir, ['rc1' this_id '.nii']);
+this_rc2 = fullfile(base_dir, ['rc2' this_id '.nii']);
 
-fprintf('Processing GM: %s\n', this_rc1);
-fprintf('Processing WM: %s\n', this_rc2);
-
-% 5. Set up the geodesic shooting batch
+% Set up the batch and run SPM 
 matlabbatch{1}.spm.tools.shoot.warp.images = {{
     [this_rc1 ',1']
     [this_rc2 ',1']
 }};
-
-% 6. Run the SPM job
 spm_jobman('run', matlabbatch);
 
-fprintf('Completed shooting for array index %d\n', SUB_ID);
