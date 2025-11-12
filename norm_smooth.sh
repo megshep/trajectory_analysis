@@ -2,7 +2,7 @@
 #SBATCH --job-name=normalise
 #SBATCH --output=/mnt/iusers01/nm01/j90161ms/logs/norm_logs/norm_%A_%a.out
 #SBATCH --error=/mnt/iusers01/nm01/j90161ms/logs/norm_logs/norm_%A_%a.err
-#SBATCH --array=1-1229%1229
+#SBATCH --array=1-3693%3693
 #SBATCH --time=72:00:00
 #SBATCH --mem=20G
 #SBATCH --cpus-per-task=1
