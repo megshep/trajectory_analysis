@@ -26,17 +26,18 @@ scans_per_sub = 3;
 start_idx = (SUB_ID - 1) * scans_per_sub + 1;
 end_idx = start_idx + scans_per_sub - 1;
 
-
 % Build SPM batch
-% use the template created during shooting to normalise to
+% use the template created during shooting to normalise
 matlabbatch{1}.spm.tools.shoot.norm.template = {fullfile(scratchDir, 'Template_4.nii')};
-matlabbatch{1}.spm.tools.shoot.norm.data.subjs.deformations = yrc1_files(start_idx:end_idx);
-matlabbatch{1}.spm.tools.shoot.norm.data.subjs.images = rc1_files(start_idx:end_idx);
+matlabbatch{1}.spm.tools.shoot.norm.data.subjs.deformations = yrc1_files(start_idx:end_idx)';
+matlabbatch{1}.spm.tools.shoot.norm.data.subjs.images = rc1_files(start_idx:end_idx)';
+
 % this follows Ashburner's recommendations for preprocessing, and I chose an 8mm kernel to match previous analyses
 matlabbatch{1}.spm.tools.shoot.norm.vox = [NaN NaN NaN];
 matlabbatch{1}.spm.tools.shoot.norm.bb = [NaN NaN NaN; NaN NaN NaN];
 matlabbatch{1}.spm.tools.shoot.norm.preserve = 1;
 matlabbatch{1}.spm.tools.shoot.norm.fwhm = 8;
+
 
 
 % Run the job
