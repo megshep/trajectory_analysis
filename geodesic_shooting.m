@@ -32,10 +32,14 @@ rc1_paths = fullfile({rc1_files.folder}, {rc1_files.name});
 % Add ,1 indexing for SPM
 rc1_paths = cellfun(@(x) [x ',1'], rc1_paths, 'UniformOutput', false);
 
+% make the cell array columns as this is how MATLAB has to deal with this information
+
+rc1_paths = rc1_paths(:);
 %
 % Construct the batch
 matlabbatch{1}.spm.tools.shoot.warp.images = {rc1_paths};
 
 % run the job
 spm_jobman('run', matlabbatch);
+
 
