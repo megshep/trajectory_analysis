@@ -28,7 +28,7 @@ end_idx = start_idx + scans_per_sub - 1;
 
 % Build SPM batch
 % use the template created during shooting to normalise
-matlabbatch{1}.spm.tools.shoot.norm.template = {fullfile(scratchDir, 'Template_4.nii')};
+matlabbatch{1}.spm.tools.shoot.norm.template = {fullfile(scratchDir, 'Template_6.nii')};
 matlabbatch{1}.spm.tools.shoot.norm.data.subjs(1).deformations = yrc1_files(start_idx:end_idx)';
 matlabbatch{1}.spm.tools.shoot.norm.data.subjs(1).images = {rc1_files(start_idx:end_idx)'};
 
