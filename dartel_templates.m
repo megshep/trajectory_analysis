@@ -30,14 +30,40 @@ for i = 1:numel(rc1_files)
     spm_write_vol(V, double(Y));
 end
 
+Vnew = V;
+    [~,fname,ext] = fileparts(rc1_files{i});
+    Vnew.fname = fullfile(V.folder, [fname '_dbl' ext]);
+    Vnew.dt = [spm_type('float64') spm_platform('bigend')];
+    
+    if isfield(Vnew,'private')
+        Vnew = rmfield(Vnew,'private'); % remove private field if exists
+    end
+    Vnew = spm_create_vol(Vnew);
+    spm_write_vol(Vnew, double(Y));
+    
+    rc1_dbl{i} = [Vnew.fname ',1']; % for DARTEL batch
+end
+
 disp('Converting rc2 images to double precision...');
 for i = 1:numel(rc2_files)
     V = spm_vol(rc2_files{i});
     Y = spm_read_vols(V);
     V.dt = [spm_type('float64') spm_platform('bigend')];
     spm_write_vol(V, double(Y));
+    
+     Vnew = V;
+    [~,fname,ext] = fileparts(rc2_files{i});
+    Vnew.fname = fullfile(V.folder, [fname '_dbl' ext]);
+    Vnew.dt = [spm_type('float64') spm_platform('bigend')];
+    
+    if isfield(Vnew,'private')
+        Vnew = rmfield(Vnew,'private');
+    end
+    Vnew = spm_create_vol(Vnew);
+    spm_write_vol(Vnew, double(Y));
+    
+    rc2_dbl{i} = [Vnew.fname ',1'];
 end
-
 
 % Add volume index, required for the  batch
 rc1_files = cellfun(@(x) [x ',1'], rc1_files, 'UniformOutput', false);
