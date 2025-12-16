@@ -21,6 +21,24 @@ end
 
 fprintf('Found %d rc1 and %d rc2 images\n', numel(rc1_files), numel(rc2_files));
 
+% Convert to double precision (required for DARTEL)
+disp('Converting rc1 images to double precision...');
+for i = 1:numel(rc1_files)
+    V = spm_vol(rc1_files{i});
+    Y = spm_read_vols(V);
+    V.dt = [spm_type('float64') spm_platform('bigend')];
+    spm_write_vol(V, double(Y));
+end
+
+disp('Converting rc2 images to double precision...');
+for i = 1:numel(rc2_files)
+    V = spm_vol(rc2_files{i});
+    Y = spm_read_vols(V);
+    V.dt = [spm_type('float64') spm_platform('bigend')];
+    spm_write_vol(V, double(Y));
+end
+
+
 % Add volume index, required for the  batch
 rc1_files = cellfun(@(x) [x ',1'], rc1_files, 'UniformOutput', false);
 rc2_files = cellfun(@(x) [x ',1'], rc2_files, 'UniformOutput', false);
