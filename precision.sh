@@ -1,15 +1,43 @@
 #!/bin/bash
-#SBATCH --job-name=convert_to_double   # Job name
-#SBATCH --output=convert_to_double.out # Standard output
-#SBATCH --error=convert_to_double.err  # Standard error
-#SBATCH --partition=normal             # Queue/partition
-#SBATCH --nodes=1                      # Number of nodes
-#SBATCH --ntasks=1                     # Number of tasks
-#SBATCH --cpus-per-task=4              # CPU cores per task
-#SBATCH --time=01:00:00                # Walltime in HH:MM:SS
+#SBATCH --job-name=convert_double
+#SBATCH --output=/mnt/iusers01/nm01/j90161ms/logs/fsl/fsl_convert_%j.out
+#SBATCH --error=/mnt/iusers01/nm01/j90161ms/logs/fsl/fsl_convert_%j.err
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=64G
+#SBATCH --time=4:00:00
+#SBATCH --partition=himem
 
-# Load MATLAB module
-module load apps/binapps/matlab/R2024b
+# Load FSL
+module load apps/binapps/fsl/6.0.5
 
-# Run the MATLAB script in batch mode
-matlab -nodisplay -nosplash -r "run('/mnt/iusers01/nm01/j90161ms/trajectory/precision.m'); exit;"
+# Use all requested CPUs in FSL - this will allow it to complete faster
+export FSL_PARALLEL=4
+
+# Directories for rc1 and rc2 inc. new directory for output
+RC1_DIR="/net/scratch/j90161ms/rc1_clean"
+RC2_DIR="/net/scratch/j90161ms/rc2_clean"
+OUT_DIR="/net/scratch/j90161ms/double_prec"
+
+# Make output directory 
+mkdir -p "$OUT_DIR"
+
+# Convert RC1 files
+for f in "$RC1_DIR"/rc1*.nii*; do
+    fname=$(basename "$f")
+    # Add 'd' after rc1
+    outname="${fname/rc1/rc1d}"
+    fslmaths "$f" -odt double "$OUT_DIR/$outname"
+done
+
+# Convert RC2 files
+for f in "$RC2_DIR"/rc2*.nii*; do
+    fname=$(basename "$f")
+    # Add 'd' after rc2
+    outname="${fname/rc2/rc2d}"
+    fslmaths "$f" -odt double "$OUT_DIR/$outname"
+done
+
+echo "All RC1 and RC2 images converted to double precision in $OUT_DIR."
+
