@@ -1,0 +1,10 @@
+for f in /net/scratch/j90161ms/rc1_clean/rc1*.nii*; do
+    dt=$(od -An -t u2 -j 70 -N 2 "$f")
+    echo "$f : $dt"
+done
+
+
+for f in /net/scratch/j90161ms/rc2_clean/rc2*.nii*; do
+    dt=$(od -An -t u2 -j 70 -N 2 "$f")
+    echo "$f : $dt"
+done
