@@ -1,11 +1,11 @@
 %
-% Normalise (affine registering to MNI 152 space) three rc1 images per participant (longitudinal design), using templates made during registration/geodesic shooting
+% Normalise (affine registering to MNI 152 space) three rc1 images per participant (longitudinal design), using DARTEL templates made during registration
 
 % Get participant index from SLURM array
 SUB_ID = str2double(getenv('SLURM_ARRAY_TASK_ID'));
 
 % Define your scratch directory
-scratchDir = '/scratch/j90161ms';
+scratchDir = '/net/scratch/j90161ms/double_prec';
 
 % Find all rc1 and y_rc1 files (exclude 'avg' - I have to do this because I've already preprocessed avg templates for each participant, if you haven't created this template, then you can skip this step)
 rc1_files = dir(fullfile(scratchDir, 'rc1*.nii'));
