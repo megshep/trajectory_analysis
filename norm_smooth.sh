@@ -9,7 +9,7 @@
 
 module load apps/binapps/matlab/R2024b
 
-export USER_SPM_DIR="/mnt/iusers01/nm01/j90161ms/scratch/spm25/spm"
+export USER_SPM_DIR="/net/scratch/j90161ms/double_prec"
 
 cd "$SLURM_SUBMIT_DIR"
 
