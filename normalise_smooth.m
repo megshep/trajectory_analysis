@@ -1,45 +1,89 @@
-%
-% Normalise (affine registering to MNI 152 space) three rc1 images per participant (longitudinal design), using DARTEL templates made during registration
+%load in SPM and initialise it
+addpath('/mnt/iusers01/nm01/j90161ms/scratch/spm25');  
+spm('defaults','FMRI');
+spm_jobman('initcfg');
 
-% Get participant index from SLURM array
+%get the subjectID for the Slurm array (this is only needed if using job arrays on an HPC)
+%I've also included a sanity check - if there are issues with the array rather than the MATLAB code itself, it will produce an error message.
 SUB_ID = str2double(getenv('SLURM_ARRAY_TASK_ID'));
+if isnan(SUB_ID)
+    error('SLURM_ARRAY_TASK_ID not found');
+end
 
-% Define your scratch directory
-scratchDir = '/net/scratch/j90161ms/double_prec';
+%setting the working directories
+rc1_dir   = '/scratch/j90161ms/rc1_clean';        %all preprocessed images are here (post-dartel template creation)
+flow_dir  = '/net/scratch/j90161ms/double_prec';  % flowfields + template are here
+output_dir = '/scratch/j90161ms/dartel_norm_smoothed';  % output to be stored here
 
-% Find all rc1 and y_rc1 files (exclude 'avg' - I have to do this because I've already preprocessed avg templates for each participant, if you haven't created this template, then you can skip this step)
-rc1_files = dir(fullfile(scratchDir, 'rc1*.nii'));
-yrc1_files = dir(fullfile(scratchDir, 'y_rc1*.nii'));
+%create a loop to make a directory if it doesn't exist (so when I keep rerunning after errors, it doesn't keep making new directories)
+if ~exist(output_dir,'dir')
+    mkdir(output_dir);
+end
 
-rc1_files = fullfile({rc1_files.folder}, {rc1_files.name});
-yrc1_files = fullfile({yrc1_files.folder}, {yrc1_files.name});
+%searches inside the directory to find any rc1 files (all 3 timepoints)
+rc1_struct = dir(fullfile(rc1_dir,'rc1*.nii*'));
+rc1_struct = rc1_struct(~contains(lower({rc1_struct.name}),'avg'));  % exclude avg files - these are produced from a previous analysis, so if you haven't done an additional crossectional VBM, this can be omitted
+rc1_files  = fullfile({rc1_struct.folder},{rc1_struct.name}); %converts the structrual information from aboce into full file paths
+rc1_files  = sort(rc1_files(:));  %alphabetically sorts the files to ensure that they're in the correct order
 
-rc1_files = rc1_files(~contains(rc1_files, 'avg'));
-yrc1_files = yrc1_files(~contains(yrc1_files, 'avg'));
+%again, another sanity check built in so I can identify where my code is failing if I get an error message
+if isempty(rc1_files)
+    error('No rc1 images found in %s', rc1_dir);
+end
 
-rc1_files = sort(rc1_files);
-yrc1_files = sort(yrc1_files);
+%Flow fields - each participant at each timepoint also has a flowfield associated, to normalise we need their rc1 + flowfield information (map of how to deform a subject’s brain to match the template)
+%
+urc1_struct = dir(fullfile(flow_dir,'u_rc1d*_Template*.nii*'));
+urc1_files  = fullfile({urc1_struct.folder},{urc1_struct.name});
+urc1_files  = sort(urc1_files(:));
 
+if isempty(urc1_files)
+    error('No flowfields found in %s', flow_dir);
+end
 
-% Get scans for this participant (3 per participant) - this is important for the slurm arrays, the number of px must match the pre-made list of subject IDs, so it needs to process all 3 scans in one array
+%
 scans_per_sub = 3;
 start_idx = (SUB_ID - 1) * scans_per_sub + 1;
-end_idx = start_idx + scans_per_sub - 1;
+end_idx   = start_idx + scans_per_sub - 1;
 
-% Build SPM batch
-% use the template created during shooting to normalise
-matlabbatch{1}.spm.tools.shoot.norm.template = {fullfile(scratchDir, 'Template_6.nii')};
-matlabbatch{1}.spm.tools.shoot.norm.data.subjs(1).deformations = yrc1_files(start_idx:end_idx)';
-matlabbatch{1}.spm.tools.shoot.norm.data.subjs(1).images = {rc1_files(start_idx:end_idx)'};
+if end_idx > numel(rc1_files) || end_idx > numel(urc1_files)
+    error('SUB_ID %d exceeds available scans', SUB_ID);
+end
 
-% this follows Ashburner's recommendations for preprocessing, and I chose an 8mm kernel to match previous analyses
-matlabbatch{1}.spm.tools.shoot.norm.vox = [NaN NaN NaN];
-matlabbatch{1}.spm.tools.shoot.norm.bb = [NaN NaN NaN; NaN NaN NaN];
-matlabbatch{1}.spm.tools.shoot.norm.preserve = 1;
-matlabbatch{1}.spm.tools.shoot.norm.fwhm = 8;
+% 
+sub_rc1  = rc1_files(start_idx:end_idx);
+sub_flow = urc1_files(start_idx:end_idx);
 
+fprintf('Processing SUB_ID %d: scans %d-%d\n', SUB_ID, start_idx, end_idx);
 
+% BATCH
+matlabbatch = [];
 
-% Run the job
-spm('defaults','FMRI');
+matlabbatch{1}.spm.tools.dartel.mni_norm.data.subj(1).images    = sub_rc1(:);
+matlabbatch{1}.spm.tools.dartel.mni_norm.data.subj(1).flowfield = sub_flow(:);
+
+% Template
+matlabbatch{1}.spm.tools.dartel.mni_norm.template = ...
+    {fullfile(flow_dir,'Template_6.nii')};
+
+% Normalisation settings
+matlabbatch{1}.spm.tools.dartel.mni_norm.vox        = [NaN NaN NaN];
+matlabbatch{1}.spm.tools.dartel.mni_norm.bb         = [NaN NaN NaN; NaN NaN NaN];
+matlabbatch{1}.spm.tools.dartel.mni_norm.preserve   = 1;
+matlabbatch{1}.spm.tools.dartel.mni_norm.fwhm       = [8 8 8];
+
+%Run job
+disp('Starting longitudinal DARTEL normalisation and smoothing...');
 spm_jobman('run', matlabbatch);
+disp('Finished normalisation and smoothing.');
+
+%move outputs
+w_files   = dir(fullfile(rc1_dir,'wrc1d*.nii*'));
+smw_files = dir(fullfile(rc1_dir,'smwrc1d*.nii*'));
+
+for f = [w_files; smw_files]'
+    movefile(fullfile(f.folder,f.name), output_dir);
+end
+
+fprintf('All outputs for SUB_ID %d moved to %s\n', SUB_ID, output_dir);
+
