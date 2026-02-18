@@ -31,17 +31,21 @@ if isempty(rc1_files)
     error('No rc1 images found in %s', rc1_dir);
 end
 
-%Flow fields - each participant at each timepoint also has a flowfield associated, to normalise we need their rc1 + flowfield information (map of how to deform a subject’s brain to match the template)
+%Flow fields - each participant at each timepoint also has a flowfield associated, to normalise, we need their rc1 + flowfield information (map of how to deform a subject’s brain to match the template)
 %
 urc1_struct = dir(fullfile(flow_dir,'u_rc1d*_Template*.nii*'));
 urc1_files  = fullfile({urc1_struct.folder},{urc1_struct.name});
 urc1_files  = sort(urc1_files(:));
 
+% This is another sanity check built in to let me know if the job fails because the directory doesn't store the files 
+% I've built these in throughout because I'm using the CSF3 so I can't always manually check each folder before running due to the number and size of the files (it takes ages!)
 if isempty(urc1_files)
     error('No flowfields found in %s', flow_dir);
 end
 
 %
+
+
 scans_per_sub = 3;
 start_idx = (SUB_ID - 1) * scans_per_sub + 1;
 end_idx   = start_idx + scans_per_sub - 1;
