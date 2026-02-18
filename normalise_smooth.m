@@ -43,37 +43,43 @@ if isempty(urc1_files)
     error('No flowfields found in %s', flow_dir);
 end
 
-%
-
-
+%how many scans per subject
 scans_per_sub = 3;
+%how many scans come before the subject, plus one is the index of the first scan for the subject
 start_idx = (SUB_ID - 1) * scans_per_sub + 1;
+% This indexes the last scan for the subject, allowing for all 3 scans per subject to be selected
 end_idx   = start_idx + scans_per_sub - 1;
 
+% Built in sanity check -- ensures that scans and flowfields exist (if error, can work out it at this stage)
 if end_idx > numel(rc1_files) || end_idx > numel(urc1_files)
     error('SUB_ID %d exceeds available scans', SUB_ID);
 end
 
-% 
+
+%this selects all files and the singular flowfields for each participant
 sub_rc1  = rc1_files(start_idx:end_idx);
-sub_flow = urc1_files(start_idx:end_idx);
+sub_flow = urc1_files(start_id;
 
-fprintf('Processing SUB_ID %d: scans %d-%d\n', SUB_ID, start_idx, end_idx);
 
-% BATCH
+% BATCH - this builds the actual batch script now we've set up the files to be input into the batch
 matlabbatch = [];
 
+%this defines the scans and flowfields into the batch
 matlabbatch{1}.spm.tools.dartel.mni_norm.data.subj(1).images    = sub_rc1(:);
 matlabbatch{1}.spm.tools.dartel.mni_norm.data.subj(1).flowfield = sub_flow(:);
 
-% Template
+% defines the DARTEL template 
 matlabbatch{1}.spm.tools.dartel.mni_norm.template = ...
     {fullfile(flow_dir,'Template_6.nii')};
 
 % Normalisation settings
+%default voxel size
 matlabbatch{1}.spm.tools.dartel.mni_norm.vox        = [NaN NaN NaN];
+%default bounding box
 matlabbatch{1}.spm.tools.dartel.mni_norm.bb         = [NaN NaN NaN; NaN NaN NaN];
+% modulation is on (keeps volume information on the normalised images to reflect concentration)
 matlabbatch{1}.spm.tools.dartel.mni_norm.preserve   = 1;
+%define smoothing kernel
 matlabbatch{1}.spm.tools.dartel.mni_norm.fwhm       = [8 8 8];
 
 %Run job
