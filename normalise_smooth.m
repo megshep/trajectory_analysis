@@ -13,12 +13,6 @@ end
 %setting the working directories
 rc1_dir   = '/scratch/j90161ms/rc1_clean';        %all preprocessed images are here (post-dartel template creation)
 flow_dir  = '/net/scratch/j90161ms/double_prec';  % flowfields + template are here
-output_dir = '/scratch/j90161ms/dartel_norm_smoothed';  % output to be stored here
-
-%create a loop to make a directory if it doesn't exist (so when I keep rerunning after errors, it doesn't keep making new directories)
-if ~exist(output_dir,'dir')
-    mkdir(output_dir);
-end
 
 %searches inside the directory to find any rc1 files (all 3 timepoints)
 rc1_struct = dir(fullfile(rc1_dir,'rc1*.nii*'));
@@ -55,7 +49,6 @@ if end_idx > numel(rc1_files) || end_idx > numel(urc1_files)
     error('SUB_ID %d exceeds available scans', SUB_ID);
 end
 
-
 %this selects all files and the singular flowfields for each participant
 sub_rc1  = rc1_files(start_idx:end_idx);
 sub_flow = urc1_files(start_id;
@@ -87,13 +80,5 @@ disp('Starting longitudinal DARTEL normalisation and smoothing...');
 spm_jobman('run', matlabbatch);
 disp('Finished normalisation and smoothing.');
 
-%move outputs
-w_files   = dir(fullfile(rc1_dir,'wrc1d*.nii*'));
-smw_files = dir(fullfile(rc1_dir,'smwrc1d*.nii*'));
 
-for f = [w_files; smw_files]'
-    movefile(fullfile(f.folder,f.name), output_dir);
-end
-
-fprintf('All outputs for SUB_ID %d moved to %s\n', SUB_ID, output_dir);
 
