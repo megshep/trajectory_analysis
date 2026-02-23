@@ -1,4 +1,3 @@
-
 % This provides a subject ID with a SLURM array ID to allow for multiple job arrays to be submitted at the same time on the CSF
 SUB_ID = str2double(getenv('SLURM_ARRAY_TASK_ID'));
 
@@ -6,8 +5,10 @@ SUB_ID = str2double(getenv('SLURM_ARRAY_TASK_ID'));
 segDir = '/scratch/j90161ms';
 
 % Find and sort all seg8.mat files -- NEED TO EDIT THIS TO REMOVE AVG_*_.SEG8.MAT BUT INCLUDE ID_.SEG8.MAT
-seg_files = dir(fullfile(segDir, 'avg_*_seg8.mat'));
-seg_files = fullfile({seg_files.folder}, {seg_files.name});
+seg_files_all = dir(fullfile(segDir, '*.seg8.mat'));
+names = {seg_files_all.name};
+keep_idx = ~startsWith(names, 'avg_');
+seg_files = fullfile({seg_files_all(keep_idx).folder}, {seg_files_all(keep_idx).name});
 seg_files = sort(seg_files);
 
 %checks subject_IDs 
@@ -42,31 +43,29 @@ spm_jobman('run', matlabbatch);
 % Stop capturing console output
 diary off
 
-% ------------------------
-% Read volumes from diary
-% ------------------------
+
+% Read volumes from diary - this opens the diary, reads all of the lines, separates them into separate lines and then closes the diary
 fid = fopen(diary_file,'r');
 txt = textscan(fid,'%s','Delimiter','\n');
 fclose(fid);
 lines = txt{1};
 
-% Find line with "Volumes"
+% Find lines within the diary which contain the cranial volumes for grey, white and CSFf for each subject, with an in-built sanity check to identify if there is an error at this step
 idx = find(contains(lines,'Volumes:'));
 if isempty(idx)
     error('Could not find volumes in diary for %s', subj_name);
 end
 
-% The next line contains the numbers
+% This extracts the volumes for the different tissue classes and converts them into numerical values from previous string variables
 vol_line = strtrim(lines{idx+1});
 vol_values = sscanf(vol_line,'%f');
 
+%in built sanity check -- error detection step
 if numel(vol_values) ~= 3
     error('Expected 3 volumes (GM, WM, CSF), got %d', numel(vol_values));
 end
 
-% ------------------------
 % Save file
-% ------------------------
 outFile = fullfile(segDir, ['TCV_' subj_name '.txt']);
 fid = fopen(outFile,'w');
 fprintf(fid,'%f\t%f\t%f\n', vol_values(1), vol_values(2), vol_values(3));
@@ -74,12 +73,3 @@ fclose(fid);
 
 disp(['Saved TCV for subject: ', subj_name]);
 disp(['Check: ', outFile]);
-
-
-
-
-
-
-
-
-
