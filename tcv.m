@@ -5,7 +5,7 @@ SUB_ID = str2double(getenv('SLURM_ARRAY_TASK_ID'));
 segDir = '/scratch/j90161ms';
 
 % Find and sort all seg8.mat files -- NEED TO EDIT THIS TO REMOVE AVG_*_.SEG8.MAT BUT INCLUDE ID_.SEG8.MAT
-seg_files_all = dir(fullfile(segDir, '*.seg8.mat'));
+seg_files_all = dir(fullfile(segDir, '*._seg8.mat'));
 names = {seg_files_all.name};
 keep_idx = ~startsWith(names, 'avg_');
 seg_files = fullfile({seg_files_all(keep_idx).folder}, {seg_files_all(keep_idx).name});
