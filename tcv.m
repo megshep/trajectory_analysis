@@ -4,7 +4,7 @@ SUB_ID = str2double(getenv('SLURM_ARRAY_TASK_ID'));
 % Defining the directory where the seg8.mat files are saved - this is the .mat file that contains the segmentation parameters of the avg templates made
 segDir = '/scratch/j90161ms';
 
-% Find and sort all seg8.mat files -- NEED TO EDIT THIS TO REMOVE AVG_*_.SEG8.MAT BUT INCLUDE ID_.SEG8.MAT
+% Find and sort all seg8.mat files -- this code removes avg_*_.seg8.mat files because these were created in a previous analysis. If you haven't actively created these, then you don't need to exclude them!
 seg_files_all = dir(fullfile(segDir, '*._seg8.mat'));
 names = {seg_files_all.name};
 keep_idx = ~startsWith(names, 'avg_');
