@@ -1,0 +1,8 @@
+%set working directory for where my normalised and smoothed scans are
+cd /scratch/j90161ms/rc1_clean
+
+%find all normalised scans| excluding any with 'avg' in their names (previous analysis produced these, they're not needed)| keep everything ordered
+ls smwrc*.nii 2>/dev/null | grep -vi avg | sort > all_smwrc_files.txt
+
+%tell me how many scans made it into the txt file (sanity check that all are included in the .txt doc)
+wc -l all_smwrc_files.txt
