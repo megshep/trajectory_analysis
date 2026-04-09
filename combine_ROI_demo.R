@@ -17,7 +17,7 @@ colnames(roi_df)[colnames(roi_df) == "Subject_ID"] <- "ID"
 demo_df$ID <- as.character(demo_df$ID)
 roi_df$ID  <- as.character(roi_df$ID)
 
-# Merge TCV into the big dataset by ID
+# Merge voxel intensity values into the big demographic dataset by ID
 merged_df <- demo_df %>%
   left_join(roi_df, by = "ID")
 
