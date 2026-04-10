@@ -7,7 +7,7 @@ spm_jobman('initcfg');
 base_dir = '/scratch/j90161ms/final_sample';
 
 % Load the excel sheet that has the list of IDs in 
-T = readtable(fullfile(base_dir,'subjects.csv'));
+T = readtable(fullfile(base_dir,'final_demographics_traj.csv'));
 N = height(T);
 
 % this is the slurm job arrays as this was conducted on the HPC/CSF 
@@ -65,6 +65,3 @@ matlabbatch{1}.spm.util.imcalc.options.interp = 1;
 matlabbatch{1}.spm.util.imcalc.options.dtype = 16;
 
 spm_jobman('run', matlabbatch);
-
-%finished successfully message
-fprintf('DONE subject %s\n', id);
