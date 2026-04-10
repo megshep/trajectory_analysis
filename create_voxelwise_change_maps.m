@@ -7,7 +7,7 @@ spm_jobman('initcfg');
 base_dir = '/scratch/j90161ms/final_sample';
 
 % Load the excel sheet that has the list of IDs in 
-T = readtable(fullfile(base_dir,'final_demographics_traj.csv'));
+T = readtable(fullfile(base_dir,'final_sample.csv'));
 N = height(T);
 
 % this is the slurm job arrays as this was conducted on the HPC/CSF 
@@ -22,7 +22,7 @@ end
 fprintf('Processing subject %d of %d\n', i, N);
 
 % this extracts one subject from the table
-id = T.ID{i};
+id = T.ID(i);
 
 %this defines the BL,FU2/3 images for individual participants 
 bl_img  = fullfile(base_dir, ['smwrc' id '.nii']);
