@@ -11,7 +11,7 @@
 module load apps/binapps/matlab/R2024b 
 
 # Set the SPM path environment variable - this includes the directory where SPM itself is saved
-export USER_SPM_DIR="/mnt/iusers01/nm01/j90161ms/scratch/spm25/spm"
+export USER_SPM_DIR="/mnt/iusers01/nm01/j90161ms/scratch/spm25"
 
 # Ensure we run in the job submission directory
 cd "$SLURM_SUBMIT_DIR"
