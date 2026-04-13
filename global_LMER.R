@@ -24,9 +24,9 @@ ggplot(data, aes(vol, ctq, colour = age_y)) + geom_point()
 
 #scale the data to standardise - this is needed as the scales were too different
 #obviously only scaling the continuous variables
-data$age_z <- scale(age)
-data$ctq_z <- scale(ctq)
-data$tcv_z <- scale(tcv)
+age <- data$age_z <- scale(age)
+ctq <- data$ctq_z <- scale(ctq)
+tcv <- data$tcv_z <- scale(tcv)
 
 #defining the model 
 #outcome is total volume
@@ -49,3 +49,11 @@ summary(model_reduced)
 
 #compare the models - uses a chisquare test on likelihood differences
 anova(model2, model_reduced)
+
+itrct <- lmer(total_vol ~ age*ctq + sex + tcv + (1|subject) + (1|rec), data = data)
+summary(itrct)
+
+#running a quick plot to look at the significant effects 
+library(effects)
+plot(allEffects(itrct))
+
