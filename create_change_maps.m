@@ -22,8 +22,9 @@ end
 fprintf('Processing subject %d of %d\n', i, N);
 
 % this extracts one subject from the table
-id = T.ID(i);
-id = char(id);
+% this also has to convert it in as a number first and then convert to a string without scientific notation (as my IDs are automatically processed as 1E+0.12)
+id_num = T.ID(i);
+id = sprintf('%.0f', id_num);
 
 %this defines the BL,FU2/3 images for individual participants 
 bl_img  = fullfile(base_dir, ['smwrc' id '.nii']);
