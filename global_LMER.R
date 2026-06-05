@@ -4,6 +4,8 @@ setwd("/Users/megsheppard/Desktop/trajectory/extract_ROI")
 library(ggplot2)
 library(dplyr)
 library(lme4)
+library(lmerTest)
+library(effects)
 
 #read in the data
 data <- read.csv("final_dataset.csv")
@@ -37,23 +39,33 @@ model <- lmer(total_vol ~ age + sex + ctq + tcv + (1|subject) + (1|rec), data = 
 #produce the output of the model
 model
 
-#load in library to produce p value
-library(lmerTest)
-model2 <- lmer(total_vol ~ age + sex + ctq + tcv + (1|subject) + (1|rec), data = data)
-summary(model2)
-
 #likelihood ratio test - this is optional but I'm doing belts and braces
 #removing els from the model
 model_reduced <- lmer(total_vol ~ age + sex + tcv + (1|subject) + (1|rec), data = data)
 summary(model_reduced)
 
 #compare the models - uses a chisquare test on likelihood differences
-anova(model2, model_reduced)
+anova(model, model_reduced)
 
+#running the interaction term between age and ELS to see how ELS influences trajectories of amygdala volume 
 itrct <- lmer(total_vol ~ age*ctq + sex + tcv + (1|subject) + (1|rec), data = data)
 summary(itrct)
 
-#running a quick plot to look at the significant effects 
-library(effects)
-plot(allEffects(itrct))
+##
+#Now we need to check a polynomial model to ensure that we're not missing nuance in the model
 
+poly_mod <- lmer( total_vol ~ (age + I(age^2))*ctq + sex + tcv + (1|subject) + (1|rec), data = data)
+summary(poly_mod)
+
+##
+#Need to start thinking about how to visualise the data now
+library(effects)
+
+#a quick and dirty plot to think about the best way to accurately visualise
+plot(Effect(c("age", "ctq"), itrct))
+
+##define a variable which separates my CTQ scores into quantiles based on their scores to help plot it 
+eff <- Effect( c("age", "CTQ_score"), itrct, xlevels = list( ctq = quantile(data$CTQ_score, probs = c(0.1, 0.91, 0.98, 1), na.rm = TRUE) ) ) 
+
+#plot
+plot(eff)
